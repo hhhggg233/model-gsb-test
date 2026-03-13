@@ -3,54 +3,154 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>用户管理系统</title>
-    <link rel="stylesheet" href="/static/css/style.css">
+    <title>用户管理与聊天系统</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
 </head>
 <body>
-    <div class="container">
-        <h1>用户管理系统</h1>
-        
-        <div class="form-section">
-            <h2 id="form-title">添加用户</h2>
-            <form id="user-form">
-                <input type="hidden" id="user-id">
-                <div class="form-group">
-                    <label for="name">姓名</label>
-                    <input type="text" id="name" required>
-                </div>
-                <div class="form-group">
-                    <label for="email">邮箱</label>
-                    <input type="email" id="email" required>
-                </div>
-                <div class="form-group">
-                    <label for="age">年龄</label>
-                    <input type="number" id="age" required min="1" max="150">
-                </div>
-                <div class="form-buttons">
-                    <button type="submit" id="submit-btn">添加</button>
-                    <button type="button" id="cancel-btn" style="display:none;">取消</button>
-                </div>
-            </form>
+    <div id="app">
+        <!-- 登录/注册界面 -->
+        <div id="auth-section" class="auth-container">
+            <div class="auth-box">
+                <h2 id="auth-title">用户登录</h2>
+                <form id="auth-form">
+                    <div class="form-group">
+                        <label for="username">用户名</label>
+                        <input type="text" id="username" name="username" required>
+                    </div>
+                    <div class="form-group" id="email-group" style="display: none;">
+                        <label for="email">邮箱</label>
+                        <input type="email" id="email" name="email">
+                    </div>
+                    <div class="form-group">
+                        <label for="password">密码</label>
+                        <input type="password" id="password" name="password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="auth-btn">登录</button>
+                </form>
+                <p class="auth-switch">
+                    <span id="auth-switch-text">还没有账号？</span>
+                    <a href="#" id="auth-switch-link">立即注册</a>
+                </p>
+                <div id="auth-message"></div>
+            </div>
         </div>
 
-        <div class="table-section">
-            <h2>用户列表</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>姓名</th>
-                        <th>邮箱</th>
-                        <th>年龄</th>
-                        <th>操作</th>
-                    </tr>
-                </thead>
-                <tbody id="user-table-body">
-                </tbody>
-            </table>
+        <!-- 主界面 -->
+        <div id="main-section" class="main-container" style="display: none;">
+            <!-- 顶部导航 -->
+            <header class="header">
+                <div class="header-left">
+                    <h1>用户管理与聊天系统</h1>
+                </div>
+                <div class="header-right">
+                    <span id="current-user"></span>
+                    <span id="user-role" class="role-badge"></span>
+                    <button id="logout-btn" class="btn btn-secondary">退出登录</button>
+                </div>
+            </header>
+
+            <div class="content">
+                <!-- 侧边栏 -->
+                <aside class="sidebar">
+                    <nav class="nav-menu">
+                        <a href="#" class="nav-item active" data-section="chat">
+                            💬 聊天
+                            <span id="unread-badge" class="badge" style="display: none;">0</span>
+                        </a>
+                        <a href="#" class="nav-item" data-section="profile">👤 个人资料</a>
+                        <a href="#" class="nav-item admin-only" data-section="users" style="display: none;">👥 用户管理</a>
+                    </nav>
+                </aside>
+
+                <!-- 主内容区 -->
+                <main class="main-content">
+                    <!-- 聊天界面 -->
+                    <div id="chat-section" class="section">
+                        <div class="chat-container">
+                            <div class="chat-sidebar">
+                                <h3>在线用户</h3>
+                                <div id="user-list" class="user-list"></div>
+                            </div>
+                            <div class="chat-main">
+                                <div id="chat-header" class="chat-header">
+                                    <span>请选择一个用户开始聊天</span>
+                                </div>
+                                <div id="chat-messages" class="chat-messages"></div>
+                                <div class="chat-input-area">
+                                    <div id="typing-indicator" class="typing-indicator"></div>
+                                    <div class="chat-input-box">
+                                        <input type="text" id="message-input" placeholder="输入消息..." disabled>
+                                        <button id="send-btn" class="btn btn-primary" disabled>发送</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 个人资料界面 -->
+                    <div id="profile-section" class="section" style="display: none;">
+                        <h2>个人资料</h2>
+                        <div id="profile-info" class="profile-card"></div>
+                    </div>
+
+                    <!-- 用户管理界面（仅管理员可见） -->
+                    <div id="users-section" class="section" style="display: none;">
+                        <h2>用户管理</h2>
+                        <div class="users-actions">
+                            <button id="refresh-users-btn" class="btn btn-secondary">刷新列表</button>
+                        </div>
+                        <table class="users-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>用户名</th>
+                                    <th>邮箱</th>
+                                    <th>角色</th>
+                                    <th>状态</th>
+                                    <th>创建时间</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="users-table-body"></tbody>
+                        </table>
+                    </div>
+                </main>
+            </div>
         </div>
     </div>
 
-    <script src="/static/js/main.js"></script>
+    <!-- 编辑用户模态框 -->
+    <div id="edit-user-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h3>编辑用户</h3>
+            <form id="edit-user-form">
+                <input type="hidden" id="edit-user-id">
+                <div class="form-group">
+                    <label for="edit-username">用户名</label>
+                    <input type="text" id="edit-username" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-email">邮箱</label>
+                    <input type="email" id="edit-email" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-role">角色</label>
+                    <select id="edit-role">
+                        <option value="user">普通用户</option>
+                        <option value="admin">管理员</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="edit-password">新密码（留空则不修改）</label>
+                    <input type="password" id="edit-password">
+                </div>
+                <button type="submit" class="btn btn-primary">保存</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
 </html>

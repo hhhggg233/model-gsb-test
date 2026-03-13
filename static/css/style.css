@@ -5,158 +5,544 @@
 }
 
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    min-height: 100vh;
-    padding: 20px;
-}
-
-.container {
-    max-width: 900px;
-    margin: 0 auto;
-    background: white;
-    border-radius: 15px;
-    padding: 30px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-}
-
-h1 {
-    text-align: center;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background-color: #f5f5f5;
     color: #333;
+}
+
+/* 认证页面样式 */
+.auth-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.auth-box {
+    background: white;
+    padding: 40px;
+    border-radius: 10px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    max-width: 400px;
+}
+
+.auth-box h2 {
+    text-align: center;
     margin-bottom: 30px;
-    font-size: 2em;
-}
-
-h2 {
-    color: #555;
-    margin-bottom: 20px;
-    padding-bottom: 10px;
-    border-bottom: 2px solid #667eea;
-}
-
-.form-section {
-    margin-bottom: 40px;
+    color: #333;
 }
 
 .form-group {
-    margin-bottom: 15px;
+    margin-bottom: 20px;
 }
 
 .form-group label {
     display: block;
     margin-bottom: 5px;
-    color: #555;
     font-weight: 500;
+    color: #555;
 }
 
-.form-group input {
+.form-group input,
+.form-group select {
     width: 100%;
     padding: 12px;
-    border: 2px solid #ddd;
-    border-radius: 8px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
     font-size: 14px;
     transition: border-color 0.3s;
 }
 
-.form-group input:focus {
+.form-group input:focus,
+.form-group select:focus {
     outline: none;
     border-color: #667eea;
 }
 
-.form-buttons {
-    display: flex;
-    gap: 10px;
-}
-
-button {
-    padding: 12px 30px;
+.btn {
+    padding: 12px 24px;
     border: none;
-    border-radius: 8px;
+    border-radius: 5px;
     cursor: pointer;
     font-size: 14px;
-    font-weight: 600;
+    font-weight: 500;
     transition: all 0.3s;
 }
 
-button[type="submit"] {
+.btn-primary {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
+    width: 100%;
 }
 
-button[type="submit"]:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+.btn-primary:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
 }
 
-#cancel-btn {
+.btn-secondary {
     background: #6c757d;
     color: white;
 }
 
-#cancel-btn:hover {
+.btn-secondary:hover {
     background: #5a6268;
 }
 
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 10px;
+.btn-danger {
+    background: #dc3545;
+    color: white;
 }
 
-th, td {
+.btn-danger:hover {
+    background: #c82333;
+}
+
+.btn-success {
+    background: #28a745;
+    color: white;
+}
+
+.btn-success:hover {
+    background: #218838;
+}
+
+.btn-small {
+    padding: 6px 12px;
+    font-size: 12px;
+}
+
+.auth-switch {
+    text-align: center;
+    margin-top: 20px;
+    color: #666;
+}
+
+.auth-switch a {
+    color: #667eea;
+    text-decoration: none;
+}
+
+.auth-switch a:hover {
+    text-decoration: underline;
+}
+
+#auth-message {
+    margin-top: 15px;
+    padding: 10px;
+    border-radius: 5px;
+    text-align: center;
+    display: none;
+}
+
+#auth-message.success {
+    background: #d4edda;
+    color: #155724;
+    display: block;
+}
+
+#auth-message.error {
+    background: #f8d7da;
+    color: #721c24;
+    display: block;
+}
+
+/* 主界面样式 */
+.main-container {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.header {
+    background: white;
+    padding: 15px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.header h1 {
+    font-size: 20px;
+    color: #333;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+#current-user {
+    font-weight: 500;
+}
+
+.role-badge {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.role-badge.admin {
+    background: #dc3545;
+    color: white;
+}
+
+.role-badge.user {
+    background: #28a745;
+    color: white;
+}
+
+.content {
+    display: flex;
+    flex: 1;
+}
+
+.sidebar {
+    width: 250px;
+    background: white;
+    border-right: 1px solid #e0e0e0;
+    padding: 20px 0;
+}
+
+.nav-menu {
+    display: flex;
+    flex-direction: column;
+}
+
+.nav-item {
+    padding: 15px 25px;
+    text-decoration: none;
+    color: #555;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.3s;
+    position: relative;
+}
+
+.nav-item:hover {
+    background: #f8f9fa;
+    color: #667eea;
+}
+
+.nav-item.active {
+    background: #f0f0f0;
+    color: #667eea;
+    border-left: 3px solid #667eea;
+}
+
+.badge {
+    background: #dc3545;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 12px;
+    margin-left: auto;
+}
+
+.main-content {
+    flex: 1;
+    padding: 30px;
+    overflow-y: auto;
+}
+
+.section h2 {
+    margin-bottom: 20px;
+    color: #333;
+}
+
+/* 聊天界面样式 */
+.chat-container {
+    display: flex;
+    height: calc(100vh - 180px);
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.chat-sidebar {
+    width: 250px;
+    background: #f8f9fa;
+    border-right: 1px solid #e0e0e0;
+    padding: 20px;
+}
+
+.chat-sidebar h3 {
+    margin-bottom: 15px;
+    color: #555;
+}
+
+.user-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.user-item {
+    padding: 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.user-item:hover {
+    background: #e9ecef;
+}
+
+.user-item.active {
+    background: #667eea;
+    color: white;
+}
+
+.user-item .online-status {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #28a745;
+}
+
+.user-item .online-status.offline {
+    background: #6c757d;
+}
+
+.chat-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-header {
+    padding: 15px 20px;
+    border-bottom: 1px solid #e0e0e0;
+    background: #f8f9fa;
+    font-weight: 500;
+}
+
+.chat-messages {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.message {
+    max-width: 70%;
+    padding: 12px 16px;
+    border-radius: 12px;
+    word-wrap: break-word;
+}
+
+.message.sent {
+    align-self: flex-end;
+    background: #667eea;
+    color: white;
+    border-bottom-right-radius: 4px;
+}
+
+.message.received {
+    align-self: flex-start;
+    background: #e9ecef;
+    color: #333;
+    border-bottom-left-radius: 4px;
+}
+
+.message-time {
+    font-size: 11px;
+    opacity: 0.7;
+    margin-top: 5px;
+}
+
+.chat-input-area {
+    border-top: 1px solid #e0e0e0;
+    padding: 15px 20px;
+}
+
+.typing-indicator {
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 8px;
+    height: 18px;
+}
+
+.chat-input-box {
+    display: flex;
+    gap: 10px;
+}
+
+.chat-input-box input {
+    flex: 1;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 25px;
+    outline: none;
+}
+
+.chat-input-box input:focus {
+    border-color: #667eea;
+}
+
+.chat-input-box button {
+    padding: 12px 30px;
+    border-radius: 25px;
+}
+
+/* 个人资料样式 */
+.profile-card {
+    background: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.profile-item {
+    display: flex;
+    padding: 15px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.profile-item:last-child {
+    border-bottom: none;
+}
+
+.profile-label {
+    width: 100px;
+    font-weight: 500;
+    color: #666;
+}
+
+.profile-value {
+    flex: 1;
+    color: #333;
+}
+
+/* 用户管理样式 */
+.users-actions {
+    margin-bottom: 20px;
+}
+
+.users-table {
+    width: 100%;
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    border-collapse: collapse;
+}
+
+.users-table th,
+.users-table td {
     padding: 15px;
     text-align: left;
     border-bottom: 1px solid #eee;
 }
 
-th {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
+.users-table th {
+    background: #f8f9fa;
     font-weight: 600;
+    color: #555;
 }
 
-tr:hover {
-    background-color: #f8f9fa;
+.users-table tr:hover {
+    background: #f8f9fa;
 }
 
-.action-buttons {
+.status-active {
+    color: #28a745;
+    font-weight: 500;
+}
+
+.status-inactive {
+    color: #dc3545;
+    font-weight: 500;
+}
+
+.role-admin {
+    color: #dc3545;
+    font-weight: 500;
+}
+
+.role-user {
+    color: #007bff;
+    font-weight: 500;
+}
+
+/* 模态框样式 */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
     display: flex;
-    gap: 8px;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
 }
 
-.action-buttons button {
-    padding: 8px 16px;
-    font-size: 12px;
+.modal-content {
+    background: white;
+    padding: 30px;
+    border-radius: 10px;
+    width: 100%;
+    max-width: 500px;
+    position: relative;
 }
 
-.action-buttons button:first-child {
-    background: #28a745;
-    color: white;
+.close-btn {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 24px;
+    cursor: pointer;
+    color: #999;
 }
 
-.action-buttons button:first-child:hover {
-    background: #218838;
+.close-btn:hover {
+    color: #333;
 }
 
-.delete-btn {
-    background: #dc3545 !important;
-    color: white !important;
-}
-
-.delete-btn:hover {
-    background: #c82333 !important;
-}
-
-@media (max-width: 600px) {
-    .container {
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .sidebar {
+        width: 200px;
+    }
+    
+    .chat-sidebar {
+        width: 200px;
+    }
+    
+    .header {
+        padding: 15px 20px;
+    }
+    
+    .main-content {
         padding: 20px;
     }
-    
-    table {
-        font-size: 14px;
+}
+
+@media (max-width: 576px) {
+    .sidebar {
+        display: none;
     }
     
-    th, td {
-        padding: 10px;
+    .chat-container {
+        flex-direction: column;
+    }
+    
+    .chat-sidebar {
+        width: 100%;
+        max-height: 200px;
     }
 }
