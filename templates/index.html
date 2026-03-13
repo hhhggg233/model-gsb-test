@@ -7,50 +7,29 @@
     <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
-    <div class="container">
+    <div class="container" style="text-align: center;">
         <h1>用户管理系统</h1>
-        
-        <div class="form-section">
-            <h2 id="form-title">添加用户</h2>
-            <form id="user-form">
-                <input type="hidden" id="user-id">
-                <div class="form-group">
-                    <label for="name">姓名</label>
-                    <input type="text" id="name" required>
-                </div>
-                <div class="form-group">
-                    <label for="email">邮箱</label>
-                    <input type="email" id="email" required>
-                </div>
-                <div class="form-group">
-                    <label for="age">年龄</label>
-                    <input type="number" id="age" required min="1" max="150">
-                </div>
-                <div class="form-buttons">
-                    <button type="submit" id="submit-btn">添加</button>
-                    <button type="button" id="cancel-btn" style="display:none;">取消</button>
-                </div>
-            </form>
-        </div>
-
-        <div class="table-section">
-            <h2>用户列表</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>姓名</th>
-                        <th>邮箱</th>
-                        <th>年龄</th>
-                        <th>操作</th>
-                    </tr>
-                </thead>
-                <tbody id="user-table-body">
-                </tbody>
-            </table>
+        <p style="margin: 30px 0; color: #666;">欢迎使用用户管理系统</p>
+        <div style="display: flex; gap: 20px; justify-content: center;">
+            <a href="/login" style="text-decoration: none;">
+                <button style="padding: 15px 40px; font-size: 16px;">登录</button>
+            </a>
+            <a href="/register" style="text-decoration: none;">
+                <button style="padding: 15px 40px; font-size: 16px; background: #28a745;">注册</button>
+            </a>
         </div>
     </div>
-
-    <script src="/static/js/main.js"></script>
+    <script>
+        const token = localStorage.getItem('token');
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        
+        if (token) {
+            if (user.role === 'admin') {
+                window.location.href = '/admin';
+            } else {
+                window.location.href = '/chat';
+            }
+        }
+    </script>
 </body>
 </html>
