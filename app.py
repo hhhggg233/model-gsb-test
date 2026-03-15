@@ -1,73 +1,51 @@
-from flask import Flask, jsonify, request, render_template
-from flask_sqlalchemy import SQLAlchemy
-from flask_cors import CORS
+from flask import Flask
+from config import Config
+from extensions import db, login_manager, socketio, cors, init_redis, r
+from models import User
+from socket_events import register_socketio_events
 
-app = Flask(__name__)
-CORS(app)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-db = SQLAlchemy(app)
-
-class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(80), nullable=False)
-    email = db.Column(db.String(120), nullable=False)
-    age = db.Column(db.Integer, nullable=False)
-
-    def to_dict(self):
-        return {
-            'id': self.id,
-            'name': self.name,
-            'email': self.email,
-            'age': self.age
-        }
-
-with app.app_context():
-    db.create_all()
-
-@app.route('/')
-def index():
-    return render_template('index.html')
-
-@app.route('/api/users', methods=['GET'])
-def get_users():
-    users = User.query.all()
-    return jsonify([user.to_dict() for user in users])
-
-@app.route('/api/users', methods=['POST'])
-def create_user():
-    data = request.get_json()
-    if not data or not all(k in data for k in ['name', 'email', 'age']):
-        return jsonify({'error': '缺少必要字段'}), 400
+def create_app():
+    app = Flask(__name__)
+    app.config.from_object(Config)
     
-    user = User(
-        name=data['name'],
-        email=data['email'],
-        age=data['age']
-    )
-    db.session.add(user)
-    db.session.commit()
-    return jsonify(user.to_dict()), 201
-
-@app.route('/api/users/<int:user_id>', methods=['PUT'])
-def update_user(user_id):
-    user = User.query.get_or_404(user_id)
-    data = request.get_json()
+    cors.init_app(app)
+    db.init_app(app)
+    login_manager.init_app(app)
+    login_manager.login_view = 'auth.login'
+    socketio.init_app(app)
     
-    user.name = data.get('name', user.name)
-    user.email = data.get('email', user.email)
-    user.age = data.get('age', user.age)
+    init_redis()
     
-    db.session.commit()
-    return jsonify(user.to_dict())
+    @login_manager.user_loader
+    def load_user(user_id):
+        return User.query.get(int(user_id))
+    
+    from routes.auth import auth_bp
+    from routes.users import users_bp
+    from routes.persons import persons_bp
+    from routes.messages import messages_bp
+    
+    app.register_blueprint(auth_bp)
+    app.register_blueprint(users_bp)
+    app.register_blueprint(persons_bp)
+    app.register_blueprint(messages_bp)
+    
+    register_socketio_events(socketio)
+    
+    return app
 
-@app.route('/api/users/<int:user_id>', methods=['DELETE'])
-def delete_user(user_id):
-    user = User.query.get_or_404(user_id)
-    db.session.delete(user)
-    db.session.commit()
-    return jsonify({'message': '用户删除成功'})
+def init_db(app):
+    with app.app_context():
+        db.create_all()
+        admin = User.query.filter_by(username='admin').first()
+        if not admin:
+            admin = User(username='admin', email='admin@example.com', role='admin')
+            admin.set_password('admin123')
+            db.session.add(admin)
+            db.session.commit()
+            print("Admin user created: username=admin, password=admin123")
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    app = create_app()
+    init_db(app)
+    socketio.run(app, debug=True, host='127.0.0.1', port=5000)

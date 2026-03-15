@@ -3,54 +3,482 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>用户管理系统</title>
-    <link rel="stylesheet" href="/static/css/style.css">
+    <title>系统管理平台</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 </head>
-<body>
-    <div class="container">
-        <h1>用户管理系统</h1>
-        
-        <div class="form-section">
-            <h2 id="form-title">添加用户</h2>
-            <form id="user-form">
-                <input type="hidden" id="user-id">
-                <div class="form-group">
-                    <label for="name">姓名</label>
-                    <input type="text" id="name" required>
+<body class="bg-gray-100">
+    <div id="authSection" class="min-h-screen flex items-center justify-center">
+        <div class="bg-white p-8 rounded-lg shadow-md w-96">
+            <h1 class="text-2xl font-bold text-center mb-6 text-gray-800">系统登录</h1>
+            <div id="loginForm">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">用户名</label>
+                    <input type="text" id="loginUsername" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
-                <div class="form-group">
-                    <label for="email">邮箱</label>
-                    <input type="email" id="email" required>
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">密码</label>
+                    <input type="password" id="loginPassword" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
-                <div class="form-group">
-                    <label for="age">年龄</label>
-                    <input type="number" id="age" required min="1" max="150">
+                <button onclick="login()" class="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md transition-colors mb-3">登录</button>
+                <p class="text-center text-sm text-gray-600">还没有账号？<a href="#" onclick="showRegister()" class="text-blue-500 hover:underline">立即注册</a></p>
+            </div>
+            <div id="registerForm" class="hidden">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">用户名</label>
+                    <input type="text" id="regUsername" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
-                <div class="form-buttons">
-                    <button type="submit" id="submit-btn">添加</button>
-                    <button type="button" id="cancel-btn" style="display:none;">取消</button>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">邮箱</label>
+                    <input type="email" id="regEmail" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
-            </form>
-        </div>
-
-        <div class="table-section">
-            <h2>用户列表</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>姓名</th>
-                        <th>邮箱</th>
-                        <th>年龄</th>
-                        <th>操作</th>
-                    </tr>
-                </thead>
-                <tbody id="user-table-body">
-                </tbody>
-            </table>
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">密码</label>
+                    <input type="password" id="regPassword" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <button onclick="register()" class="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md transition-colors mb-3">注册</button>
+                <p class="text-center text-sm text-gray-600">已有账号？<a href="#" onclick="showLogin()" class="text-blue-500 hover:underline">立即登录</a></p>
+            </div>
         </div>
     </div>
 
-    <script src="/static/js/main.js"></script>
+    <div id="mainSection" class="hidden">
+        <nav class="bg-white shadow-md">
+            <div class="max-w-7xl mx-auto px-4">
+                <div class="flex justify-between h-16">
+                    <div class="flex space-x-8">
+                        <button onclick="showTab('persons')" class="tab-btn inline-flex items-center px-1 pt-1 text-gray-900 border-b-2 border-blue-500 font-medium">人员管理</button>
+                        <button onclick="showTab('users')" id="usersTab" class="tab-btn hidden inline-flex items-center px-1 pt-1 text-gray-500 hover:text-gray-700 font-medium">用户管理</button>
+                        <button onclick="showTab('chat')" class="tab-btn inline-flex items-center px-1 pt-1 text-gray-500 hover:text-gray-700 font-medium">聊天系统</button>
+                    </div>
+                    <div class="flex items-center">
+                        <span class="text-gray-700 mr-4" id="currentUserInfo"></span>
+                        <button onclick="logout()" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-md text-sm">退出登录</button>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <div class="max-w-7xl mx-auto py-6 px-4">
+            <div id="personsTab" class="tab-content">
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h1 class="text-2xl font-bold text-center mb-6 text-gray-800">人员管理系统</h1>
+                    
+                    <div class="mb-6 p-4 border border-gray-200 rounded-lg bg-gray-50">
+                        <h2 class="text-lg font-semibold mb-3 text-gray-700">添加/编辑人员</h2>
+                        <form id="personForm" class="grid grid-cols-1 md:grid-cols-6 gap-4">
+                            <input type="hidden" id="personId">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">用户名</label>
+                                <input type="text" id="name" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">邮箱</label>
+                                <input type="email" id="personEmail" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">密码</label>
+                                <input type="password" id="personPassword" placeholder="默认123456" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">年龄</label>
+                                <input type="number" id="age" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">职位</label>
+                                <input type="text" id="position" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div class="flex items-end">
+                                <button type="submit" id="personSubmitBtn" class="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md transition-colors">
+                                    添加人员
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div>
+                        <h2 class="text-lg font-semibold mb-3 text-gray-700">人员列表</h2>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full bg-white border border-gray-200">
+                                <thead>
+                                    <tr class="bg-gray-50">
+                                        <th class="py-3 px-4 border-b text-left text-sm font-medium text-gray-700">ID</th>
+                                        <th class="py-3 px-4 border-b text-left text-sm font-medium text-gray-700">姓名</th>
+                                        <th class="py-3 px-4 border-b text-left text-sm font-medium text-gray-700">年龄</th>
+                                        <th class="py-3 px-4 border-b text-left text-sm font-medium text-gray-700">职位</th>
+                                        <th class="py-3 px-4 border-b text-left text-sm font-medium text-gray-700">操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="personList"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="usersTabContent" class="tab-content hidden">
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h1 class="text-2xl font-bold text-center mb-6 text-gray-800">用户管理</h1>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full bg-white border border-gray-200">
+                            <thead>
+                                <tr class="bg-gray-50">
+                                    <th class="py-3 px-4 border-b text-left text-sm font-medium text-gray-700">ID</th>
+                                    <th class="py-3 px-4 border-b text-left text-sm font-medium text-gray-700">用户名</th>
+                                    <th class="py-3 px-4 border-b text-left text-sm font-medium text-gray-700">邮箱</th>
+                                    <th class="py-3 px-4 border-b text-left text-sm font-medium text-gray-700">角色</th>
+                                    <th class="py-3 px-4 border-b text-left text-sm font-medium text-gray-700">注册时间</th>
+                                    <th class="py-3 px-4 border-b text-left text-sm font-medium text-gray-700">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="userList"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="chatTab" class="tab-content hidden">
+                <div class="bg-white rounded-lg shadow-md" style="height: 600px;">
+                    <div class="flex h-full">
+                        <div class="w-1/4 border-r border-gray-200">
+                            <div class="p-4 border-b border-gray-200">
+                                <h2 class="text-lg font-semibold text-gray-800">联系人</h2>
+                            </div>
+                            <div id="contactList" class="overflow-y-auto" style="height: calc(100% - 61px);"></div>
+                        </div>
+                        <div class="flex-1 flex flex-col">
+                            <div id="chatHeader" class="p-4 border-b border-gray-200 bg-gray-50">
+                                <h2 class="text-lg font-semibold text-gray-800">请选择一个联系人开始聊天</h2>
+                            </div>
+                            <div id="messages" class="flex-1 overflow-y-auto p-4 bg-gray-50"></div>
+                            <div class="p-4 border-t border-gray-200">
+                                <div class="flex space-x-2">
+                                    <input type="text" id="messageInput" placeholder="输入消息..." class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <button onclick="sendMessage()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md transition-colors">发送</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let socket;
+        let currentUser = null;
+        let selectedContact = null;
+        let isEditing = false;
+
+        function initSocket() {
+            socket = io();
+            socket.on('receive_message', (message) => {
+                if (selectedContact && 
+                    ((message.sender_id === selectedContact.id && message.receiver_id === currentUser.id) ||
+                     (message.sender_id === currentUser.id && message.receiver_id === selectedContact.id))) {
+                    addMessageToUI(message);
+                }
+            });
+        }
+
+        function showLogin() {
+            document.getElementById('loginForm').classList.remove('hidden');
+            document.getElementById('registerForm').classList.add('hidden');
+        }
+
+        function showRegister() {
+            document.getElementById('loginForm').classList.add('hidden');
+            document.getElementById('registerForm').classList.remove('hidden');
+        }
+
+        async function login() {
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    currentUser = data;
+                    document.getElementById('authSection').classList.add('hidden');
+                    document.getElementById('mainSection').classList.remove('hidden');
+                    document.getElementById('currentUserInfo').textContent = `当前用户：${data.username} (${data.role === 'admin' ? '管理员' : '普通用户'})`;
+                    
+                    if (data.role === 'admin') {
+                        document.getElementById('usersTab').classList.remove('hidden');
+                        document.getElementById('personForm').classList.remove('hidden');
+                        loadUsers();
+                    } else {
+                        document.getElementById('personForm').classList.add('hidden');
+                    }
+                    
+                    initSocket();
+                    loadPersons();
+                    loadContacts();
+                } else {
+                    alert(data.error || '登录失败');
+                }
+            } catch (error) {
+                alert('登录失败: ' + error.message);
+            }
+        }
+
+        async function register() {
+            const username = document.getElementById('regUsername').value;
+            const email = document.getElementById('regEmail').value;
+            const password = document.getElementById('regPassword').value;
+            
+            try {
+                const response = await fetch('/api/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, email, password })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    alert('注册成功，请登录');
+                    showLogin();
+                } else {
+                    alert(data.error || '注册失败');
+                }
+            } catch (error) {
+                alert('注册失败: ' + error.message);
+            }
+        }
+
+        async function logout() {
+            await fetch('/api/logout', { method: 'POST' });
+            currentUser = null;
+            selectedContact = null;
+            if (socket) socket.disconnect();
+            document.getElementById('mainSection').classList.add('hidden');
+            document.getElementById('authSection').classList.remove('hidden');
+        }
+
+        function showTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('border-b-2', 'border-blue-500', 'text-gray-900');
+                btn.classList.add('text-gray-500', 'hover:text-gray-700');
+            });
+            
+            if (tabName === 'persons') {
+                document.getElementById('personsTab').classList.remove('hidden');
+                loadPersons();
+            } else if (tabName === 'users') {
+                document.getElementById('usersTabContent').classList.remove('hidden');
+                loadUsers();
+            } else if (tabName === 'chat') {
+                document.getElementById('chatTab').classList.remove('hidden');
+                loadContacts();
+            }
+            
+            event.target.classList.remove('text-gray-500', 'hover:text-gray-700');
+            event.target.classList.add('border-b-2', 'border-blue-500', 'text-gray-900');
+        }
+
+        async function loadPersons() {
+            try {
+                const response = await fetch('/api/persons');
+                const persons = await response.json();
+                const tbody = document.getElementById('personList');
+                tbody.innerHTML = '';
+                persons.forEach(person => {
+                    const tr = document.createElement('tr');
+                    tr.className = 'hover:bg-gray-50';
+                    tr.innerHTML = `
+                        <td class="py-3 px-4 border-b text-sm text-gray-700">${person.id}</td>
+                        <td class="py-3 px-4 border-b text-sm text-gray-700">${person.name}</td>
+                        <td class="py-3 px-4 border-b text-sm text-gray-700">${person.age}</td>
+                        <td class="py-3 px-4 border-b text-sm text-gray-700">${person.position}</td>
+                        <td class="py-3 px-4 border-b text-sm">
+                            ${currentUser.role === 'admin' ? `
+                                <button onclick="editPerson(${JSON.stringify(person).replace(/"/g, '&quot;')})" class="text-blue-500 hover:text-blue-700 mr-3">编辑</button>
+                                <button onclick="deletePerson(${person.id})" class="text-red-500 hover:text-red-700">删除</button>
+                            ` : '<span class="text-gray-400">无权限</span>'}
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } catch (error) {
+                console.error('加载人员失败:', error);
+            }
+        }
+
+        async function deletePerson(id) {
+            if (!confirm('确定要删除该人员吗？')) return;
+            await fetch(`/api/persons/${id}`, { method: 'DELETE' });
+            loadPersons();
+        }
+
+        function editPerson(person) {
+            isEditing = true;
+            document.getElementById('personId').value = person.id;
+            document.getElementById('name').value = person.name;
+            document.getElementById('age').value = person.age;
+            document.getElementById('position').value = person.position;
+            document.getElementById('personSubmitBtn').textContent = '更新人员';
+            document.getElementById('personSubmitBtn').classList.replace('bg-blue-500', 'bg-green-500');
+            document.getElementById('personSubmitBtn').classList.replace('hover:bg-blue-600', 'hover:bg-green-600');
+        }
+
+        document.getElementById('personForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const personId = document.getElementById('personId').value;
+            const personData = {
+                name: document.getElementById('name').value,
+                email: document.getElementById('personEmail').value,
+                password: document.getElementById('personPassword').value,
+                age: parseInt(document.getElementById('age').value),
+                position: document.getElementById('position').value
+            };
+
+            let url = '/api/persons';
+            let method = 'POST';
+
+            if (isEditing && personId) {
+                url = `/api/persons/${personId}`;
+                method = 'PUT';
+            }
+
+            await fetch(url, {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(personData)
+            });
+            loadPersons();
+            this.reset();
+            document.getElementById('personId').value = '';
+            isEditing = false;
+            document.getElementById('personSubmitBtn').textContent = '添加人员';
+            document.getElementById('personSubmitBtn').classList.replace('bg-green-500', 'bg-blue-500');
+            document.getElementById('personSubmitBtn').classList.replace('hover:bg-green-600', 'hover:bg-blue-600');
+        });
+
+        async function loadUsers() {
+            try {
+                const response = await fetch('/api/users');
+                const users = await response.json();
+                const tbody = document.getElementById('userList');
+                tbody.innerHTML = '';
+                users.forEach(user => {
+                    const tr = document.createElement('tr');
+                    tr.className = 'hover:bg-gray-50';
+                    tr.innerHTML = `
+                        <td class="py-3 px-4 border-b text-sm text-gray-700">${user.id}</td>
+                        <td class="py-3 px-4 border-b text-sm text-gray-700">${user.username}</td>
+                        <td class="py-3 px-4 border-b text-sm text-gray-700">${user.email}</td>
+                        <td class="py-3 px-4 border-b text-sm text-gray-700">${user.role === 'admin' ? '管理员' : '普通用户'}</td>
+                        <td class="py-3 px-4 border-b text-sm text-gray-700">${new Date(user.created_at).toLocaleString()}</td>
+                        <td class="py-3 px-4 border-b text-sm">
+                            ${user.id !== currentUser.id ? `
+                                <button onclick="toggleUserRole(${user.id}, '${user.role}')" class="text-blue-500 hover:text-blue-700 mr-3">
+                                    ${user.role === 'admin' ? '设为普通用户' : '设为管理员'}
+                                </button>
+                                <button onclick="deleteUser(${user.id})" class="text-red-500 hover:text-red-700">删除</button>
+                            ` : '<span class="text-gray-400">当前用户</span>'}
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } catch (error) {
+                console.error('加载用户失败:', error);
+            }
+        }
+
+        async function toggleUserRole(userId, currentRole) {
+            const newRole = currentRole === 'admin' ? 'user' : 'admin';
+            await fetch(`/api/users/${userId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ role: newRole })
+            });
+            loadUsers();
+        }
+
+        async function deleteUser(userId) {
+            if (!confirm('确定要删除该用户吗？')) return;
+            await fetch(`/api/users/${userId}`, { method: 'DELETE' });
+            loadUsers();
+        }
+
+        async function loadContacts() {
+            try {
+                const response = await fetch('/api/contacts');
+                const users = await response.json();
+                const contactList = document.getElementById('contactList');
+                contactList.innerHTML = '';
+                users.forEach(user => {
+                    if (user.id !== currentUser.id) {
+                        const div = document.createElement('div');
+                        div.className = 'p-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100';
+                        div.textContent = user.username;
+                        div.onclick = () => selectContact(user);
+                        contactList.appendChild(div);
+                    }
+                });
+            } catch (error) {
+                console.error('加载联系人失败:', error);
+            }
+        }
+
+        function selectContact(contact) {
+            selectedContact = contact;
+            document.getElementById('chatHeader').innerHTML = `
+                <h2 class="text-lg font-semibold text-gray-800">${contact.username}</h2>
+                <p class="text-sm text-gray-500">${contact.email}</p>
+            `;
+            loadMessages();
+        }
+
+        async function loadMessages() {
+            if (!selectedContact) return;
+            try {
+                const response = await fetch(`/api/messages/${selectedContact.id}`);
+                const messages = await response.json();
+                const messagesDiv = document.getElementById('messages');
+                messagesDiv.innerHTML = '';
+                messages.forEach(message => {
+                    addMessageToUI(message);
+                });
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            } catch (error) {
+                console.error('加载消息失败:', error);
+            }
+        }
+
+        function addMessageToUI(message) {
+            const messagesDiv = document.getElementById('messages');
+            const div = document.createElement('div');
+            div.className = `mb-3 ${message.sender_id === currentUser.id ? 'text-right' : ''}`;
+            div.innerHTML = `
+                <div class="inline-block ${message.sender_id === currentUser.id ? 'bg-blue-500 text-white' : 'bg-white border border-gray-200'} rounded-lg px-3 py-2 max-w-xs">
+                    <p>${message.content}</p>
+                    <p class="text-xs ${message.sender_id === currentUser.id ? 'text-blue-100' : 'text-gray-500'} mt-1">
+                        ${new Date(message.created_at).toLocaleTimeString()}
+                    </p>
+                </div>
+            `;
+            messagesDiv.appendChild(div);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function sendMessage() {
+            if (!selectedContact) return;
+            const content = document.getElementById('messageInput').value.trim();
+            if (!content) return;
+            
+            socket.emit('send_message', {
+                receiver_id: selectedContact.id,
+                content: content
+            });
+            
+            document.getElementById('messageInput').value = '';
+        }
+    </script>
 </body>
 </html>
