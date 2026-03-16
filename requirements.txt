@@ -1,3 +1,11 @@
 flask
 flask-sqlalchemy
 flask-cors
+pymysql
+cryptography
+redis
+flask-jwt-extended
+werkzeug
+python-dotenv
+eventlet
+flask-socketio

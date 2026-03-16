@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>聊天</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.4/socket.io.min.js"></script>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="sidebar">
+            <div class="user-info">
+                <span id="current-user"></span>
+                <a href="#" onclick="logout()" class="logout-btn">退出</a>
+            </div>
+            <div class="conversations">
+                <h3>会话列表</h3>
+                <ul id="conversation-list"></ul>
+            </div>
+            <div class="user-list">
+                <h3>在线用户</h3>
+                <ul id="user-list"></ul>
+            </div>
+        </div>
+        <div class="chat-main">
+            <div class="chat-header">
+                <span id="chat-with">选择一个用户开始聊天</span>
+            </div>
+            <div class="messages" id="messages"></div>
+            <div class="message-input">
+                <input type="text" id="message-input" placeholder="输入消息..." disabled>
+                <button id="send-btn" disabled>发送</button>
+            </div>
+        </div>
+    </div>
+    <script src="/static/js/chat.js"></script>
+</body>
+</html>
