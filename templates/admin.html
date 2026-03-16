@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户管理</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>用户管理系统</h1>
+            <div class="user-info">
+                <span id="admin-name"></span>
+                <a href="/chat" class="nav-link">聊天</a>
+                <a href="#" onclick="logout()" class="logout-btn">退出</a>
+            </div>
+        </div>
+        
+        <div class="form-section">
+            <h2 id="form-title">添加用户</h2>
+            <form id="user-form">
+                <input type="hidden" id="user-id">
+                <div class="form-group">
+                    <label for="username">用户名</label>
+                    <input type="text" id="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">邮箱</label>
+                    <input type="email" id="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">密码</label>
+                    <input type="password" id="password">
+                    <small>编辑时留空表示不修改密码</small>
+                </div>
+                <div class="form-group">
+                    <label for="role">角色</label>
+                    <select id="role">
+                        <option value="user">普通用户</option>
+                        <option value="admin">管理员</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="is-active" checked>
+                        账户启用
+                    </label>
+                </div>
+                <div class="form-buttons">
+                    <button type="submit" id="submit-btn">添加</button>
+                    <button type="button" id="cancel-btn" style="display:none;">取消</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="table-section">
+            <h2>用户列表</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>用户名</th>
+                        <th>邮箱</th>
+                        <th>角色</th>
+                        <th>状态</th>
+                        <th>创建时间</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody id="user-table-body">
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <script src="/static/js/admin.js"></script>
+</body>
+</html>
